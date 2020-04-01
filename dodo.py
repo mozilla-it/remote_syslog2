@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import json
 
@@ -28,9 +26,15 @@ def account():
     obj = json.loads(result)
     return obj['Account']
 
+def reponame():
+    cmd = 'basename $(git rev-parse --show-toplevel)'
+    result = call(cmd, cwd=DIR)
+    return result
+
 REGION = os.environ.get('REGION', 'us-west-2')
-REPONAME = os.environ.get('REPONAME', 'remote_syslog2')
-REPOURL = f'{account()}.dkr.ecr.{REGION}.amazonaws.com/{REPONAME}'
+ACCOUNT = os.environ.get('ACCOUNT', account())
+REPONAME = os.environ.get('REPONAME', reponame())
+REPOURL = f'{ACCOUNT}.dkr.ecr.{REGION}.amazonaws.com/{REPONAME}'
 REMOTE_SYSLOG2_VERSION = os.environ.get('REMOTE_SYSLOG2_VERSION', 'v0.20')
 
 def envs(sep=' ', **kwargs):
