@@ -7,6 +7,11 @@ src: https://pydoit.org/
 
 `pip3 install doit` will install the required python3 commandline tool.
 
+## doit list
+
+This command is a built-in with doit and will list every task in the dodo.py
+file.  Currently that is everything that is everything listed below.
+
 ## doit login
 
 Running this command will login to the AWS ECR Docker repository.  This
