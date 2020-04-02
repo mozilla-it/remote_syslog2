@@ -46,11 +46,12 @@ def envs(sep=' ', **kwargs):
     )
 
 def task_build():
-    cmd = f'env {envs()} docker build . -t {REPOURL}:{REMOTE_SYSLOG2_VERSION}'
+    cmds = [
+        f'env {envs()} docker build . -t {REPOURL}:{REMOTE_SYSLOG2_VERSION}',
+        f'env {envs()} docker image prune -f --filter label=stage=intermediate',
+    ]
     return {
-        'actions': [
-            cmd,
-        ],
+        'actions': cmds,
     }
 
 def task_login():
