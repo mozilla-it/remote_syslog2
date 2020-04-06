@@ -20,7 +20,7 @@ def call(cmd, **kwargs):
         raise cpe
     return result
 
-def account():
+def aws_account():
     cmd = 'aws sts get-caller-identity'
     result = call(cmd)
     obj = json.loads(result)
@@ -31,8 +31,8 @@ def reponame():
     result = call(cmd, cwd=DIR)
     return result
 
-REGION = os.environ.get('REGION', 'us-west-2')
-ACCOUNT = os.environ.get('ACCOUNT', account())
+AWS_REGION = os.environ.get('AWS_REGION', 'us-west-2')
+AWS_ACCOUNT = os.environ.get('AWS_ACCOUNT', aws_account())
 REPONAME = os.environ.get('REPONAME', reponame())
 REPOURL = f'{ACCOUNT}.dkr.ecr.{REGION}.amazonaws.com/{REPONAME}'
 REMOTE_SYSLOG2_VERSION = os.environ.get('REMOTE_SYSLOG2_VERSION', 'v0.20')
