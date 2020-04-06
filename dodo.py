@@ -13,18 +13,23 @@ DOIT_CONFIG = {
     'verbosity': 2,
 }
 
-def call(cmd, **kwargs):
-    try:
-        result = check_output(cmd, shell=kwargs.pop('shell', True), **kwargs).decode('utf-8').strip()
-    except CalledProcessError as cpe:
-        raise cpe
+def call(cmd, stderr=PIPE, shell=True, **kwargs):
+    result = check_output(
+        cmd,
+        stderr=stderr,
+        shell=shell,
+        **kwargs).decode('utf-8').strip()
     return result
 
 def aws_account():
     cmd = 'aws sts get-caller-identity'
-    result = call(cmd)
-    obj = json.loads(result)
-    return obj['Account']
+    try:
+        result = call(cmd)
+        obj = json.loads(result)
+        return obj['Account']
+    except CalledProcessError as cpe:
+        if 'Unable to locate credentials' in cpe.stderr.decode():
+            return 'MISSING_CREDENTIALS'
 
 def reponame():
     cmd = 'basename $(git rev-parse --show-toplevel)'
@@ -34,7 +39,7 @@ def reponame():
 AWS_REGION = os.environ.get('AWS_REGION', 'us-west-2')
 AWS_ACCOUNT = os.environ.get('AWS_ACCOUNT', aws_account())
 REPONAME = os.environ.get('REPONAME', reponame())
-REPOURL = f'{ACCOUNT}.dkr.ecr.{REGION}.amazonaws.com/{REPONAME}'
+REPOURL = f'{AWS_ACCOUNT}.dkr.ecr.{AWS_REGION}.amazonaws.com/{REPONAME}'
 REMOTE_SYSLOG2_VERSION = os.environ.get('REMOTE_SYSLOG2_VERSION', 'v0.20')
 
 def envs(sep=' ', **kwargs):
@@ -55,7 +60,7 @@ def task_build():
     }
 
 def task_login():
-    cmd = f'aws ecr get-login-password --region {REGION} | docker login --username AWS --password-stdin {REPOURL}'
+    cmd = f'aws ecr get-login-password --region {AWS_REGION} | docker login --username AWS --password-stdin {REPOURL}'
     return {
         'actions': [
             cmd,
